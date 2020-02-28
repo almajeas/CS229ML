@@ -19,46 +19,57 @@ def plot_sampled_points(X, t):
     plt.ylim(-lim, lim)
     plt.show()
 
+#data range
+lim = 1.0
+r = np.arange(-lim, lim, 0.05)
+num = len(r)
+
+#plot configuration initialization
+rows = num 
+cols = 3
+fig, axes = plt.subplots(rows,cols, figsize=(cols*4 , rows*4 ), dpi=100)
+fig.subplots_adjust(hspace = 0.3, wspace=0.3)
+axs = axes.ravel()
+pltctr = 0
+
+#Parameter Initialization
+alpha = 2.0
+beta = 25
 mu = 0 
 sigma = 0.2
-r = np.arange(-1, 1, 0.05)
-beta = 25
-alpha = 2.0
 covariance_matrix = (1/alpha) * np.identity(2, dtype=float)
+
+#Matrix population
 W = np.zeros((2, 1))
-X = np.random.uniform(-1, 1, 40)
+X = np.random.uniform(-lim, lim, len(r))
 X = np.reshape(X,(len(X), 1))
 t = np.empty(X.shape)
+
+#Calculating t and addition noise
 for i in range(len(X)):
     t[i] = calc_t(X[i])+ np.random.normal(mu, 1/beta)
 posterior_matrix = np.ones((len(X), len(t)))
 likelihood_matrix = np.ones((len(X), len(t)))
 
-rows = len(r) + 1
-cols = 3
-fig, axes = plt.subplots(rows,cols, figsize=(cols*2 , rows*2 ), dpi=80)
-fig.subplots_adjust(hspace = 1, wspace=1)
 
-axs = axes.ravel()
-pltctr = 0
-axs[pltctr].plot(0 ,0)
-for ctr in range(len(r)):
+for ctr in range(num):
     for i, w0 in enumerate(r):
         for j, w1 in enumerate(r):
             if ctr == 0:
                 posterior_matrix[j][i] = prior(np.array([[w0], [w1]]), 0, covariance_matrix)
             likelihood_matrix[j][i] = np.exp((-beta/2.0) * (t[ctr] - (w0 + w1*X[ctr]))**2)
-    posterior_matrix = posterior_matrix * likelihood_matrix
+    
+    ## Plotting Prior/Posterior
     pltctr += 1
+    axs[pltctr].set_xlim([-lim, lim])
+    axs[pltctr].set_ylim([-lim, lim])
     axs[pltctr].contourf(r, r, posterior_matrix, cmap='jet')
     axs[pltctr].set_title("Prior/Posterior")
     axs[pltctr].set(xlabel='w0', ylabel='w1')
-    # x = np.linspace(-1,1,len(r))
-    # y = 0.5*x-0.3
-    # plt.plot(x, y, '-r', label='y=2x+1')
-    axs[pltctr].plot(-0.3, 0.5, marker="+")
-    pltctr += 1
+    axs[pltctr].plot(-0.3, 0.5, marker="+", color='w')
     
+    ##Sampling and plotting dataspace
+    pltctr += 1
     for i in range(6):
         xs, ys = np.unravel_index(np.random.choice(posterior_matrix.size, p=posterior_matrix.ravel()/float(posterior_matrix.sum())), posterior_matrix.shape)
         w1 = 2 * ((xs)/(len(r))) - 1 #Normalize index to -1, 1
@@ -68,24 +79,25 @@ for ctr in range(len(r)):
         axs[pltctr].plot(x, y, '-r')
     markersX = []
     markersY = []
-    for k in range(ctr):
+    for k in range(ctr+1):
         markersX.append(X[k])
         markersY.append(t[k])
-    axs[pltctr].plot(markersX, markersY, 'o', color='blue')
-    lim = 1.0
+    axs[pltctr].plot(markersX, markersY, 'o', markerfacecolor='none')
     axs[pltctr].set_xlim([-lim, lim])
     axs[pltctr].set_ylim([-lim, lim])
     axs[pltctr].set(xlabel='x', ylabel='y')
     axs[pltctr].set_title("Data space")
 
-
-    # plt.show()
+    posterior_matrix = posterior_matrix * likelihood_matrix
+    if ctr == num - 1:
+        break
+    ##Plotting likelihood
     pltctr += 1
+    axs[pltctr].set_xlim([-lim, lim])
+    axs[pltctr].set_ylim([-lim, lim])
     axs[pltctr].contourf(r, r, likelihood_matrix, cmap='jet')
     axs[pltctr].set_title("Likelihood")
     axs[pltctr].set(xlabel='w0', ylabel='w1')
-    # plt.show()
-    
-    # plt.show()
-plt.savefig('/home/almajea/code/python/CS229ML/HW2/plt.png')
+
+plt.savefig('./plt.png')
 # plt.show()
