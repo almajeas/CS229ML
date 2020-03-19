@@ -41,7 +41,7 @@ def activationDerivative(x):
 def RMSE(y, t):
     return np.sqrt(np.sum((y - t.T)**2))/ len(y)
 
-epochs = 20 # number of epochs
+epochs = 200 # number of epochs
 learning_rate = 0.0001 # learning rate
 input_dimensions = 2 #Input variables for the NN first layer
 input_points = 1250 # total generated samples
@@ -61,7 +61,7 @@ x_train, x_test, t_train, t_test = train_test_split(X, T, test_size=0.20, random
 
 ## structure of NN in array from, each element is a layer.
 ## starting with input layer and ending with output layer
-neurons_per_layer = np.array([input_dimensions, 30,  output_dimensions])
+neurons_per_layer = np.array([input_dimensions, 2,  output_dimensions])
 
 
 NN = list() ##Neural Network object
@@ -69,10 +69,10 @@ W = list() ## Weights
 Wgrad = list() ## Weights gradient calculations (back propagation)
 B = list() ## Biases
 Bgrad = list() ## Biases gradient calculations (back propagation)
-Wgrads = list()
-Bgrads = list()
-Eg2W = list()
-Eg2B = list()
+Wgrads = list()## AdaGrad time sum gradients for W
+Bgrads = list()## AdaGrad time sum gradients for biases
+Eg2W = list()##RMSprob sum for square gradients of W
+Eg2B = list()##RMSprob sum for square gradients of B
 ## Initialize Weights, Biases, Gradients
 def initialize():
     ##Initialize NN
@@ -81,10 +81,10 @@ def initialize():
     Wgrad.clear() ## Weights gradient calculations (back propagation)
     B.clear() ## Biases
     Bgrad.clear() ## Biases gradient calculations (back propagation)
-    Wgrads.clear()
-    Bgrads.clear()
-    Eg2W.clear()
-    Eg2B.clear()
+    Wgrads.clear() ## AdaGrad time sum gradients for W
+    Bgrads.clear() ## AdaGrad time sum gradients for biases
+    Eg2W.clear()  ##RMSprob sum for square gradients of W
+    Eg2B.clear() ##RMSprob sum for square gradients of B
     for i in range(len(neurons_per_layer)):
         NN.append(np.zeros((neurons_per_layer[0], 1)))
     for i in range(len(neurons_per_layer) -1 ):
@@ -138,27 +138,22 @@ def BGD():
     # plt.legend()
     # plt.show()
 
-    # plt.title(f"HW3.2.2 RMSE with epochs on Training and Testing Sets\nNeural Network Layers: {neurons_per_layer}")
-    # plt.plot(training_errors, color='orange', label='Training Set')
-    # plt.plot(testing_errors, color='green', label="Testing Set")
-    # plt.xlabel("Epochs")
-    # plt.ylabel("Error")
-    # plt.legend()
-    # plt.show()
-
-
-    plt.title(f"HW3.Bonus Baseline BGD RMSE with epochs on Training and Testing Sets\nNeural Network Layers: {neurons_per_layer}")
-    plt.plot(training_errors, color='orange', label=f'BGD Training Set')
-    plt.plot(testing_errors, color='green', label=f"BGD Testing Set")
+    plt.title(f"HW3.2.2 RMSE with epochs on Training and Testing Sets\nNeural Network Layers: {neurons_per_layer}")
+    plt.plot(training_errors, color='orange', label='Training Set')
+    plt.plot(testing_errors, color='green', label="Testing Set")
     plt.xlabel("Epochs")
     plt.ylabel("Error")
     plt.legend()
-    # plt.show()
+    plt.show()
 
 
+    # plt.title(f"HW3.Bonus Baseline BGD RMSE with epochs on Training and Testing Sets\nNeural Network Layers: {neurons_per_layer}")
+    # plt.plot(training_errors, color='orange', label=f'BGD Training Set')
+    # plt.plot(testing_errors, color='green', label=f"BGD Testing Set")
+    # plt.xlabel("Epochs")
+    # plt.ylabel("Error")
+    # plt.legend()
 
-
-print("=================================")
 def BGD_AdaGrad():
     epsilon = 10e-8
     learning_rate = 1
@@ -186,14 +181,13 @@ def BGD_AdaGrad():
     plt.xlabel("Epochs")
     plt.ylabel("Error")
     plt.legend()
-    # plt.show()
+    plt.show()
 
 
 
 def BGD_RMSprop():
     gamma = 0.9
     epsilon = 10e-8
-    # learning_rate = 1
     ##lists to keep track of errors for plotting.
     training_errors = []
     testing_errors = []
@@ -212,7 +206,7 @@ def BGD_RMSprop():
         testing_errors.append(RMSE(NN[-1], t_test))
         print(f"{epoch} - {training_errors[-1]}")
 
-    plt.title(f"HW3.Bonus AdaGrad RMSE with epochs on Training and Testing Sets\nNeural Network Layers: {neurons_per_layer}")
+    plt.title(f"HW3.Bonus AdaGrad RMSprop RMSE with epochs on Training and Testing Sets\nNeural Network Layers: {neurons_per_layer}")
     plt.plot(training_errors, color='magenta', label='RMSprob Training Set')
     plt.plot(testing_errors, color='gray', label="RMSprob Testing Set")
     plt.xlabel("Epochs")
@@ -222,7 +216,9 @@ def BGD_RMSprop():
 
 initialize()
 BGD()
-initialize()
-BGD_AdaGrad()
-initialize()
-BGD_RMSprop()
+
+# initialize()
+# BGD_AdaGrad()
+
+# initialize()
+# BGD_RMSprop()
